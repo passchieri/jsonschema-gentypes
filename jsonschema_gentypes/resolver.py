@@ -90,7 +90,7 @@ _VOCAB_URL_RE = re.compile(rf"{re.escape(_URL_PREFIX)}([0-9-]+)/vocab/(.+)$")
 _META_RE = re.compile(r"^meta/([a-zA-Z0-9]+)#(.*)$")
 
 
-class UnRedolvedException(Exception):
+class UnResolvedException(Exception):
     """Exception for unresolved references."""
 
 
@@ -188,7 +188,7 @@ class RefResolver:
                     return resolver.lookup(uri).contents
                 except (referencing.exceptions.NoSuchResource, referencing.exceptions.PointerToNowhere):
                     pass
-        raise UnRedolvedException(f"Ref '{uri}' not found") from exception
+        raise UnResolvedException(f"Ref '{uri}' not found") from exception
 
     def auto_resolve(
         self,
