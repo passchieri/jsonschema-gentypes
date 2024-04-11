@@ -118,7 +118,7 @@ class RefResolver:
         Parameter:
             base_url: The base URL of the schema.
             schema: The schema to resolve.
-            files: Addtional schema files to use for resolving references
+            files: Additional schema files to use for resolving references
         """
         schema = _openapi_schema(schema) if schema is not None else None
         self.schema = _open_uri(base_url) if schema is None else schema
@@ -132,25 +132,22 @@ class RefResolver:
         if "$schema" in self.schema:
             _RESOURCE_CACHE[base_url] = referencing.Resource.from_contents(self.schema)
             if "$id" in self.schema and self.schema.get("$id"):
-                id = self.schema.get("$id")
-                _RESOURCE_CACHE[id] = _RESOURCE_CACHE[base_url]
+                _RESOURCE_CACHE[str(self.schema.get("$id"))] = _RESOURCE_CACHE[base_url]
 
-        extra_resources: list[referencing.Resource] = []
+        extra_resources: list[referencing.Resource[Any]] = []
         if files:
             for file in files:
-                with open(file) as f:
-                    data = json.load(f)
-                    if "$schema" in data:
-                        if "$id" in data:  # If it has an $id, add the resource by id
-                            extra_resources.append(referencing.Resource.from_contents(data))
-                        # and always add it by filename
-                        data = copy.deepcopy(data)
-                        data["$id"] = file
+                with open(file, encoding="UTF-8") as schema_file:
+                    data = json.load(schema_file)
+                if "$schema" in data:
+                    if "$id" in data:  # If it has an $id, add the resource by id
                         extra_resources.append(referencing.Resource.from_contents(data))
-                    else:
-                        print(
-                            f"File {file} does not contain a $schema tag, so will not be used for resolving"
-                        )
+                    # and always add it by filename
+                    data = copy.deepcopy(data)
+                    data["$id"] = file
+                    extra_resources.append(referencing.Resource.from_contents(data))
+                else:
+                    print(f"File {file} does not contain a $schema tag, so will not be used for resolving")
 
         self.registry = extra_resources @ referencing.Registry(retrieve=_open_uri_resolver)  # type: ignore
         self.resolver: referencing._core.Resolver[
