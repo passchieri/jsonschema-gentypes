@@ -4,10 +4,10 @@ Resolve references in a JSON schema.
 Encapsulate the referencing logic to be able to use it in the code generation.
 """
 
+import copy
 import json
 import re
-from typing import Any, Optional, Union, List, cast
-import copy
+from typing import Any, Optional, Union, cast
 
 import referencing._core
 import referencing.exceptions
@@ -110,7 +110,7 @@ class RefResolver:
                 jsonschema_draft_06.JSONSchemaItemD6, jsonschema_draft_2020_12_applicator.JSONSchemaItemD2020
             ]
         ] = None,
-        files: Optional[List[str]] = None,
+        files: Optional[list[str]] = None,
     ) -> None:
         """
         Initialize the resolver.
@@ -135,10 +135,10 @@ class RefResolver:
                 id = self.schema.get("$id")
                 _RESOURCE_CACHE[id] = _RESOURCE_CACHE[base_url]
 
-        extra_resources: List[referencing.Resource] = []
+        extra_resources: list[referencing.Resource] = []
         if files:
             for file in files:
-                with open(file, "r") as f:
+                with open(file) as f:
                     data = json.load(f)
                     if "$schema" in data:
                         if "$id" in data:  # If it has an $id, add the resource by id
