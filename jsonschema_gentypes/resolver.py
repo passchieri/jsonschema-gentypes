@@ -6,7 +6,8 @@ Encapsulate the referencing logic to be able to use it in the code generation.
 
 import json
 import re
-from typing import Any, Optional, Union, cast
+from typing import Any, Optional, Union, List, cast
+import copy
 
 import referencing._core
 import referencing.exceptions
@@ -109,6 +110,7 @@ class RefResolver:
                 jsonschema_draft_06.JSONSchemaItemD6, jsonschema_draft_2020_12_applicator.JSONSchemaItemD2020
             ]
         ] = None,
+        files: Optional[List[str]] = None,
     ) -> None:
         """
         Initialize the resolver.
@@ -116,6 +118,7 @@ class RefResolver:
         Parameter:
             base_url: The base URL of the schema.
             schema: The schema to resolve.
+            files: Addtional schema files to use for resolving references
         """
         schema = _openapi_schema(schema) if schema is not None else None
         self.schema = _open_uri(base_url) if schema is None else schema
@@ -128,8 +131,28 @@ class RefResolver:
         )
         if "$schema" in self.schema:
             _RESOURCE_CACHE[base_url] = referencing.Resource.from_contents(self.schema)
+            if "$id" in self.schema and self.schema.get("$id"):
+                id = self.schema.get("$id")
+                _RESOURCE_CACHE[id] = _RESOURCE_CACHE[base_url]
 
-        self.registry = referencing.Registry(retrieve=_open_uri_resolver)  # type: ignore
+        extra_resources: List[referencing.Resource] = []
+        if files:
+            for file in files:
+                with open(file, "r") as f:
+                    data = json.load(f)
+                    if "$schema" in data:
+                        if "$id" in data:  # If it has an $id, add the resource by id
+                            extra_resources.append(referencing.Resource.from_contents(data))
+                        # and always add it by filename
+                        data = copy.deepcopy(data)
+                        data["$id"] = file
+                        extra_resources.append(referencing.Resource.from_contents(data))
+                    else:
+                        print(
+                            f"File {file} does not contain a $schema tag, so will not be used for resolving"
+                        )
+
+        self.registry = extra_resources @ referencing.Registry(retrieve=_open_uri_resolver)  # type: ignore
         self.resolver: referencing._core.Resolver[
             Union[
                 jsonschema_draft_06.JSONSchemaItemD6,
