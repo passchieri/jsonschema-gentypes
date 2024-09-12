@@ -3,6 +3,7 @@ Generate the Python type files from the JSON schema files.
 """
 
 import argparse
+import json
 import logging
 import os
 import pkgutil
@@ -10,9 +11,13 @@ import random
 import re
 import subprocess  # nosec
 import sys
+from collections.abc import Iterable
 from typing import Any, Callable, Optional, Union, cast
 
 import yaml
+from jsonschema import ValidationError
+from jsonschema.protocols import Validator
+from jsonschema.validators import validator_for
 
 import jsonschema_gentypes.api
 import jsonschema_gentypes.api_draft_04
@@ -102,9 +107,40 @@ def main() -> None:
         assert schema_data
         with open(args.config, encoding="utf-8") as data_file:
             data = yaml.load(data_file, Loader=yaml.SafeLoader)
+        if args.skip_config_errors:
+            print("Skipping configuration validation")
+        else:
+            validate_config(schema_data, data)
         config = cast(configuration.Configuration, data)
 
     process_config(config, args.files)
+
+
+def validate_config(schema_data: bytes, config: Any):
+    # try:
+    schema = json.loads(schema_data)
+    validator_class = validator_for(config)
+    validator: Validator = validator_class(schema)
+    errors = list(validator.iter_errors(config))
+    if errors and len(errors):
+        msg = "Validation Errors when validating configuration"
+        for error in validator.iter_errors(config):
+            path = create_json_path(error.relative_path)
+            if path:
+                msg = msg + f"\n  * {error.message} @ {path}"
+            else:
+                msg = msg + f"\n  * {error.message}"
+        raise ValidationError(msg)
+
+
+def create_json_path(elements: Iterable[Union[str, int]]) -> str:
+    path = ""
+    for el in elements:
+        if isinstance(el, int):
+            path = path + f"[{el}]"
+        else:
+            path = path + f".{el}" if path else el
+    return path
 
 
 class _AddType:
