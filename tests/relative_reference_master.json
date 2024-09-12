@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:relative_reference:master",
+  "type": "object",
+  "properties": {
+    "child": {
+      "$ref": "urn:relative_reference:child"
+    }
+  },
+  "required": ["child"]
+}

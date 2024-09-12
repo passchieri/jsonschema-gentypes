@@ -5,7 +5,6 @@ import pytest
 import jsonschema_gentypes.api_draft_07
 import jsonschema_gentypes.api_draft_2019_09
 import jsonschema_gentypes.api_draft_2020_12
-import jsonschema_gentypes.resolver
 from jsonschema_gentypes.api import Type
 
 from .test_test import get_types
@@ -13,7 +12,7 @@ from .test_test import get_types
 
 def get_definition(type_: Type) -> list[str]:
     """Get the type full definition"""
-    actual = []
+    actual: list[str] = []
     actual += [e for e in type_.definition(None) if e]
 
     for t_ in type_.depends_on():

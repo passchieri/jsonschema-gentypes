@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:relative_reference:child",
+  "type": "object",
+  "description": "Child",
+  "properties": {
+    "child1": {
+      "type": "string"
+    },
+    "child2": {
+      "type": "string"
+    },
+    "local_ref_child3": {
+      "$ref": "#/$defs/local_ref"
+    }
+  },
+  "$defs": {
+    "local_ref": {
+      "type": "string",
+      "description": "Local child ref"
+    }
+  },
+  "required": ["name", "id"]
+}
