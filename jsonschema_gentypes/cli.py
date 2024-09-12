@@ -121,7 +121,7 @@ def validate_config(config: Any) -> None:
     validator_class = validator_for(config)
     validator: Validator = validator_class(schema)
     errors = list(validator.iter_errors(config))
-    if errors and len(errors):
+    if errors and len(errors) > 0:
         msg = "Validation Errors when validating configuration"
         for error in validator.iter_errors(config):
             path = create_json_path(error.relative_path)
@@ -134,11 +134,11 @@ def validate_config(config: Any) -> None:
 
 def create_json_path(elements: Iterable[Union[str, int]]) -> str:
     path = ""
-    for el in elements:
-        if isinstance(el, int):
-            path = path + f"[{el}]"
+    for element in elements:
+        if isinstance(element, int):
+            path = path + f"[{element}]"
         else:
-            path = path + f".{el}" if path else el
+            path = path + f".{element}" if path else element
     return path
 
 
