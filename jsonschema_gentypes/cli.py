@@ -103,21 +103,20 @@ def main() -> None:
             ],
         }
     else:
-        schema_data = pkgutil.get_data("jsonschema_gentypes", "schema.json")
-        assert schema_data
         with open(args.config, encoding="utf-8") as data_file:
             data = yaml.load(data_file, Loader=yaml.SafeLoader)
         if args.skip_config_errors:
             print("Skipping configuration validation")
         else:
-            validate_config(schema_data, data)
+            validate_config(data)
         config = cast(configuration.Configuration, data)
 
     process_config(config, args.files)
 
 
-def validate_config(schema_data: bytes, config: Any):
-    # try:
+def validate_config(config: Any) -> None:
+    schema_data = pkgutil.get_data("jsonschema_gentypes", "schema.json")
+    assert schema_data
     schema = json.loads(schema_data)
     validator_class = validator_for(config)
     validator: Validator = validator_class(schema)
