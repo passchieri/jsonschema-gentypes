@@ -14,9 +14,9 @@ help: ## Display this help message
 	touch $@
 
 .PHONY: prospector
-prospector: .poetry.timestamps # Run Prospector check
+prospector: .poetry.timestamps ## Run Prospector check
 	poetry run prospector --output=pylint --die-on-tool-error
 
 .PHONY: pyprest
-pytest: .poetry.timestamps # Run the unit tests
+pytest: .poetry.timestamps ## Run the unit tests
 	poetry run pytest -vv --cov=jsonschema_gentypes --cov-report=term-missing
