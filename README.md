@@ -24,13 +24,14 @@ You can also write a config file named `jsonschema-gentypes.yaml` with:
 headers: >
   # Automatically generated file from a JSON schema
 # Used to correctly format the generated file
+# These tools should be available in your python environment
 callbacks:
   - - black
   - - isort
 generate:
   - # JSON schema file path
     source: jsonschema_gentypes/schema.json
-    # Python file path
+    # Python output file path. Will be overwritten, if exists
     destination: jsonschema_gentypes/configuration.py
     # The name of the root element
     root_name: Config
@@ -39,10 +40,10 @@ generate:
       additional_properties: Only explicit
     # Rename an element
     name_mapping: {}
-    # The minimum Python version that the code should support. By default the
-    # currently executing Python version is chosen. Note that the output
-    # may require typing_extensions to be installed.
-    python_version: '3.11'
+# The minimum Python version that the code should support. By default the
+# currently executing Python version is chosen. Note that the output
+# may require typing_extensions to be installed.
+python_version: '3.11'
 ```
 
 And just run:
